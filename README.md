@@ -1,3 +1,38 @@
+# TD Matrices — Compte rendu
+
+INSA Centre Val de Loire — 3e année STI — Programmation C
+
+> Version de travail mise à jour le 27 octobre 2026. Le présent compte rendu documente l’avancement connu du groupe ; les sections non encore réalisées devront être complétées avant le rendu.
+
+## Membres du groupe
+
+| Membre | GitHub | Travail documenté ici |
+|---|---|---|
+| HUYNH Van Thanh | [@huynhthanh09](https://github.com/huynhthanh09) | Exercice 1, étapes 1.a à 1.f ; tests de l’exercice 1 |
+
+Ajouter les autres membres du binôme ou trinôme, leurs comptes GitHub et leur contribution avant le rendu final.
+
+## Sommaire
+
+- [Introduction](#introduction)
+- [Exercice 1 — Allocation et destruction](#exercice-1--allocation-et-destruction)
+  - [1.a — Messages d’erreur](#1a--messages-derreur)
+  - [1.b — Validité d’une matrice](#1b--validité-dune-matrice)
+  - [1.c — Vérification des dimensions](#1c--vérification-des-dimensions)
+  - [1.d — Allocation des lignes](#1d--allocation-des-lignes)
+  - [1.e — Finalisation de l’allocation](#1e--finalisation-de-lallocation)
+  - [1.f — Destruction](#1f--destruction)
+  - [Tests et vérification mémoire](#tests-et-vérification-mémoire)
+  - [Questions de réflexion](#questions-de-réflexion)
+- [Déclaration de l’aide utilisée](#déclaration-de-laide-utilisée)
+- [Éléments à compléter par le groupe](#éléments-à-compléter-par-le-groupe)
+
+## Introduction
+
+Ce TD porte sur le stockage et la manipulation de matrices en C. Pour l’exercice 1, la matrice est représentée par un tableau de pointeurs : chaque pointeur désigne une ligne allouée séparément. Cette représentation impose de gérer soigneusement les erreurs d’allocation et de remettre la matrice dans l’état `MATRICE_VIDE` lorsqu’une opération échoue ou après sa destruction.
+
+## Exercice 1 — Allocation et destruction
+
 ### 1.a — Messages d’erreur
 
 Dans `mat_message_erreur` (`matrice.c`), les codes `MAT_ERR_DIMENSIONS` et `MAT_ERR_DEPASSEMENT` n’avaient pas de `case` : ils tombaient dans le cas par défaut et renvoyaient « erreur inconnue ». Je les ai ajoutés sur le modèle des autres cas :
@@ -21,6 +56,7 @@ return m != NULL
 ```
 
 L’opérateur `&&` s’arrête dès qu’une condition est fausse. Le test `m != NULL` est donc placé en premier : on ne lit jamais `m->coef` quand `m` vaut `NULL`. Les tests vérifient qu’une matrice `1 x 2` est valide, et que `NULL`, `MATRICE_VIDE` et une matrice à zéro ligne ne le sont pas.
+
 ### 1.c — Vérification des dimensions
 
 Les lignes vérifiant `res` et initialisant `*res` à `MATRICE_VIDE` étaient fournies. J’ai ajouté le contrôle des deux dimensions : elles doivent être comprises entre `1` et `MAT_DIM_MAX`, bornes incluses.
@@ -49,29 +85,4 @@ for (int i = 0; i < nb_lignes; i++) {
 }
 ```
 
-Si l’allocation de la ligne `i` échoue, je libère les lignes `0` à `i - 1` déjà obtenues, puis le tableau de pointeurs, et je renvoie `MAT_ERR_ALLOCATION`. Aucune fuite n’est possible et `*res` reste vide. Le test avec `-DMAT_TEST_ALLOC` fait échouer chaque allocation tour à tour et le vérifie.
-
-### 1.e — Finalisation de l’allocation
-
-Quand toutes les allocations ont réussi, je remplis `*res` en dernier :
-
-```c
-res->coef = coef;
-res->nb_lignes = nb_lignes;
-res->nb_colonnes = nb_colonnes;
-return MAT_OK;
-```
-
-Remplir `*res` seulement à la fin garantit qu’un échec ne laisse jamais une matrice à moitié construite : `*res` reste dans l’état vide initialisé au début de la fonction (code fourni).
-
-### 1.f — Destruction
-
-```c
-if (m->coef != NULL) {
-    for (int i = 0; i < m->nb_lignes; i++)
-        free(m->coef[i]);
-    free(m->coef);
-}
-```
-
-Je libère d’abord chaque ligne, puis le tableau de pointeurs. L’ordre est important : libérer `m->coef` en premier rendrait les pointeurs `m->coef[i]` inaccessibles et provoquerait des fuites. La remise de `*m` à `MATRICE_VIDE` (fournie) rend un second appel sans danger.
+Si l’allocation de la ligne `i` échoue, je
