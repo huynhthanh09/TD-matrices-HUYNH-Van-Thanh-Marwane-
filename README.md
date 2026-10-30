@@ -9,7 +9,7 @@ INSA Centre Val de Loire — 3e année STI — Programmation C
 | Membre | GitHub | Travail documenté ici |
 |---|---|---|
 | HUYNH Van Thanh | [@huynhthanh09](https://github.com/huynhthanh09) | Exercice 1, étapes 1.a à 1.f ; tests de l’exercice 1 |
-
+| Marwane Laanaya | [@LnyMarwane](https://github.com/LnyMarwane | Exercice 2 et 4 |  
 Ajouter les autres membres du binôme ou trinôme, leurs comptes GitHub et leurs contributions avant le rendu final.
 
 ## Sommaire
@@ -182,3 +182,63 @@ Codex (assistant d’IA) a été utilisé pour clarifier les consignes, examiner
 - Ajouter la sortie réelle de Valgrind avec le résumé du tas et la confirmation d’absence de fuite.
 - Compléter les scénarios de démonstration et le bilan global du groupe.
 - Avant le rendu, créer le tag `rendu` sur le commit final et pousser ce tag. Déposer sur Célène le ZIP du dépôt au tag `rendu`, l’adresse du dépôt GitHub et les 7 premiers caractères du commit. Date limite annoncée : lundi 2 novembre 2026 à 18 h. Le dépôt GitHub doit être public au plus tard le mardi 3 novembre 2026.
+
+## Exercice 2: 
+
+**Question 1)**  
+mat_lire remplit une matrice locale avant de l'affecter à *res afin de garantir la règle R3 de la bibliothèque, laquelle impose que si une fonction échoue, le paramètre de sortie *res doit être laissé dans un état sûr (MATRICE_VIDE), sans fuite de mémoire. 
+
+**Question 2)**
+Non, La fonction mat_lire (via l'appel de lire_entier qui utilise fscanf avec %31s et strtol) se contente de consommer les entiers les uns après les autres.En C, les fonctions de formatage de la bibliothèque standard considèrent les espaces, les tabulations et les sauts de ligne (\n) comme de simples séparateurs. Donc ce comportement n'est pas gênant. 
+
+**Question 3)**
+il suffit d'écrire la première matrice (mat_ecrire), puis, sans fermer le fichier, d'écrire la seconde à la suite (mat_ecrire). Les deux blocs de texte se succéderont naturellement. On effectue deux appels successifs à mat_lire sur le même pointeur de fichier f : 
+
+Matrice m1, m2; 
+
+  
+
+// 1. Lecture de la première matrice 
+
+if (mat_lire(f, &m1) != MAT_OK) { 
+
+    // Gestion de l'erreur... 
+
+} 
+
+  
+
+// 2. Le curseur est déjà positionné au début de la deuxième matrice  
+
+// On peut donc la lire directement sans manipulation supplémentaire. 
+
+if (mat_lire(f, &m2) != MAT_OK) { 
+
+    // Gestion de l'erreur... 
+
+    mat_detruire(&m1); // Ne pas oublier de nettoyer m1 en cas d'échec de m2 
+
+} 
+
+
+**Question 4)**
+En langage C, les fonctions d'écriture comme fprintf ou fputc n'écrivent pas immédiatement sur le disque dur. Pour des raisons de performance, les données sont stockées temporairement dans une mémoire tampon (le buffer) en mémoire vive. Le contenu n'est réellement envoyé et écrit physiquement sur le disque que lorsque le tampon est plein, ou lors de la fermeture du fichier. En appelant fflush(f) juste avant la fin, on force le système à vider immédiatement le tampon vers le fichier. Si cette opération physique échoue, fflush renvoie EOF, ce qui permet à mat_ecrire de capter l'erreur sur le moment, d'interrompre le processus et de renvoyer MAT_ERR_ECRITURE au lieu de valider faussement l'écriture. 
+
+Cela ne dispense pas de tester fclose() car Même si fflush a réussi, l'appelant (qui a ouvert le fichier avec fopen) doit toujours tester le retour de la fonction fclose(f) à la fin, car La fonction fclose effectue elle aussi un dernier vidage du tampon (flush) et libère les ressources associées au fichier. De plus, sur certains systèmes d'exploitation ou réseaux, c'est au moment exact de la fermeture (close) que les erreurs d'écriture définitives sont remontées. 
+
+##Exercice 4:
+
+**Question 1)**
+Dans une bibliothèque de fonctions (comme matrice.c), il est préférable que les fonctions bas niveau (mat_lire, etc.) ne gèrent pas directement les affichages d'erreurs textuels (fprintf(stderr, ...)). Si la bibliothèque affichait des messages directement dans la console, cela poserait problème dans le cas d'une application avec une interface graphique (GUI) : le message s'afficherait dans la console en arrière-plan sans que l'utilisateur ne le voie, ou perturberait l'affichage graphique. En laissant main.c (ou les fonctions appelantes) s'occuper des messages, la bibliothèque reste générique et réutilisable (elle se contente de renvoyer un code d'erreur, et c'est au programme hôte de décider comment afficher l'erreur, que ce soit via la console ou par une boîte de dialogue graphique). 
+
+**Question 2)**
+Dans sauvegarder : Lors d'une écriture dans un fichier, le système d'exploitation utilise un tampon (buffer) et l'écriture physique sur le disque n'est parfois finalisée qu'au moment du fclose. De plus, des erreurs critiques peuvent survenir à ce moment-là (par exemple : le disque est plein, la clé USB a été débranchée, ou les droits d'écriture manquent). Il est donc crucial de tester fclose pour s'assurer que les données ont bien été écrites et enregistrées. Dans charger : Lors de la lecture d'un fichier, aucune modification n'est apportée au support de stockage. Le fichier a déjà été lu avec succès (ses données sont en mémoire vive). Même si la fermeture du fichier échoue, cela n'altère pas les données qui viennent d'être chargées, ce qui rend le test de fclose moins critique. 
+
+**Question 3)**
+Il faut libérer 3 matrices : 
+
+La matrice a 
+
+La matrice b 
+
+La matrice r (le résultat du calcul, qui a bien été allouée en mémoire puisque le calcul a réussi). 
