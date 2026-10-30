@@ -78,7 +78,8 @@ int main(int argc, char *argv[])
         goto nettoyage;
 
     /* (4.a) À COMPLÉTER : afficher A et B avec mat_afficher.          */
-
+    mat_afficher("A", &a);
+    mat_afficher("B", &b);
 
     /* (4.b) À COMPLÉTER : calculer r.
      *         MatErreur err = addition ? mat_additionner(&a, &b, &r)
@@ -86,11 +87,18 @@ int main(int argc, char *argv[])
      *       Si err != MAT_OK : afficher sur stderr un message utilisant
      *       mat_message_erreur(err) et les dimensions de A et de B,
      *       puis : goto nettoyage;                                    */
-
-    (void)addition;   /* ligne provisoire : à supprimer en (4.b) */
+     MatErreur err = addition ? mat_additionner(&a, &b, &r)
+                              : mat_multiplier(&a, &b, &r);
+     if (err != MAT_OK) {
+        fprintf(stderr, "Erreur : calcul impossible : %s ",
+     mat_message_erreur(err));
+     fprintf(stderr, "(A : %d x %d, B : %d x %d)\n", stdout, "Matrice A : %d lignes, %d colonnes\n", a.nb_lignes, a.nb_colonnes, stdout, "Matrice B : %d lignes, %d colonnes\n", b.nb_lignes, b.nb_colonnes);
+     goto nettoyage;
+}
+    
 
     /* (4.c) À COMPLÉTER : afficher r (nom "R = A + B" ou "R = A x B").  */
-
+    mat_afficher((addition ? "R = A + B" : "R = A x B"), &r);
 
     /* FOURNI : enregistrement de r dans le fichier argv[4]. */
     if (sauvegarder(argv[4], &r) != MAT_OK)
@@ -99,11 +107,12 @@ int main(int argc, char *argv[])
     /* (4.d) À COMPLÉTER : tout a réussi :
      *         - afficher "Résultat enregistré dans \"...\"." ;
      *         - statut = EXIT_SUCCESS;                                 */
-
+     fprintf(stdout, "Résultat enregistré dans \"%s\".\n", argv[4]);
+     statut = EXIT_SUCCESS;
 
 nettoyage:
     /* FOURNI : point de sortie unique. Chaque matrice est détruite
-     * exactement une fois, quel que soit le chemin suivi. */
+     * exactement une fois, quel que soit le chemin suivi. */ 
     mat_detruire(&r);
     mat_detruire(&b);
     mat_detruire(&a);
