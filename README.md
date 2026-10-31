@@ -2,22 +2,22 @@
 
 INSA Centre Val de Loire — 3e année STI — Programmation C
 
-> Version de travail mise à jour le 31 octobre 2026. Cette version documente les exercices 1, 2 et 3. Le compte rendu du groupe reste à compléter (exercice 4, bilan, Valgrind de l’exercice 3) avant le rendu.
+> Version de travail mise à jour le 31 octobre 2026. Cette version documente les exercices 1 et 3, ainsi que les réponses et le résultat de test de l’exercice 2. Le compte rendu du groupe reste à compléter (explications de l’exercice 2, exercice 4, bilan) avant le rendu.
 
 ## Membres du groupe
 
 | Membre | GitHub | Travail documenté ici | Résultat des tests |
 |---|---|---|---|
-| HUYNH Van Thanh | [@huynhthanh09](https://github.com/huynhthanh09) | Exercice 1, étapes 1.a à 1.f (`matrice.c`, `matrice_alloc.c`) ; exercice 3, étapes 3.a à 3.h (`matrice_calcul.c`) ; réponses aux questions Q3.1 à Q3.4 et Q5.1 à Q5.4 | `test_ex1` : 16 / 16 ; `test_ex3` : 14 / 14 |
-| Marwane Laanaya | [@LnyMarwane](https://github.com/LnyMarwane) | Exercice 2 (`matrice_io.c`) | À compléter |
+| HUYNH Van Thanh | [@huynhthanh09](https://github.com/huynhthanh09) | Exercice 1, étapes 1.a à 1.f (`matrice.c`, `matrice_alloc.c`) ; exercice 3, étapes 3.a à 3.h (`matrice_calcul.c`) ; réponses aux questions Q3.1 à Q3.4 et Q5.1 à Q5.4 | `test_ex1` : 16 / 16 ; `test_ex3` : 14 / 14, Valgrind sans fuite |
+| Marwane Laanaya | [@LnyMarwane](https://github.com/LnyMarwane) | Exercice 2 (`matrice_io.c`) ; réponses aux questions Q4.1 à Q4.4 | `test_ex2` : 14 / 14 |
 
 ### Avancement par exercice
 
 | Exercice | Fichier(s) | Responsable | État | Test |
 |---|---|---|---|---|
 | 1 — Allocation et destruction | `matrice.c`, `matrice_alloc.c` | Van Thanh | Terminé | `test_ex1` : 16 / 16, Valgrind sans fuite |
-| 2 — Entrées-sorties | `matrice_io.c` | Marwane | Explications et sortie de `test_ex2` à ajouter | À compléter |
-| 3 — Calcul matriciel | `matrice_calcul.c` | Van Thanh | Terminé | `test_ex3` : 14 / 14, Valgrind à ajouter |
+| 2 — Entrées-sorties | `matrice_io.c` | Marwane | Code terminé ; explications des étapes 2.a à 2.f et Valgrind à ajouter | `test_ex2` : 14 / 14 |
+| 3 — Calcul matriciel | `matrice_calcul.c` | Van Thanh | Terminé | `test_ex3` : 14 / 14, Valgrind sans fuite |
 | 4 — Démonstration complète | `main.c` | Marwane | À compléter | À compléter |
 
 ## Sommaire
@@ -33,6 +33,7 @@ INSA Centre Val de Loire — 3e année STI — Programmation C
   - [Tests et vérification mémoire](#tests-et-vérification-mémoire)
   - [Questions de réflexion](#questions-de-réflexion)
 - [Exercice 2 — Lecture, écriture et affichage](#exercice-2--lecture-écriture-et-affichage)
+  - [Tests de l’exercice 2](#tests-de-lexercice-2)
   - [Questions de l’exercice 2](#questions-de-lexercice-2)
 - [Exercice 3 — Calcul matriciel](#exercice-3--calcul-matriciel)
   - [3.a — Dimensions de l’addition](#3a--dimensions-de-laddition)
@@ -174,19 +175,26 @@ Bilan : 16 / 16 verifications reussies.
 
 Les 16 vérifications de `test_ex1` ont réussi, y compris les échecs d’allocation simulés.
 
-Valgrind n’existant pas sous Windows, la vérification mémoire a été faite sous Linux (Valgrind 3.22.0), sur les fichiers de l’exercice 1 de ce dépôt (`matrice.c`, `matrice_alloc.c`) avec la commande `valgrind --leak-check=full ./test_ex1`. Extrait du rapport :
+Valgrind n’existant pas sous Windows, la vérification mémoire a été réalisée sous Linux (Ubuntu 22.04 dans WSL2, Valgrind 3.18.1), sur les fichiers de l’exercice 1 de ce dépôt (`matrice.c`, `matrice_alloc.c`), avec les commandes suivantes :
 
-```text
-==196== HEAP SUMMARY:
-==196==     in use at exit: 0 bytes in 0 blocks
-==196==   total heap usage: 11 allocs, 11 frees, 4,300 bytes allocated
-==196==
-==196== All heap blocks were freed -- no leaks are possible
-==196==
-==196== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```bash
+gcc -std=c11 -Wall -Wextra -Wpedantic -g -DMAT_TEST_ALLOC test_ex1.c matrice.c matrice_alloc.c -o /tmp/test_ex1
+valgrind --leak-check=full /tmp/test_ex1
 ```
 
-Les 11 allocations correspondent à 11 libérations : aucune fuite, y compris dans les scénarios d’échec d’allocation simulés.
+Extrait du rapport (après les 16 lignes `[OK]`) :
+
+```text
+==1088== HEAP SUMMARY:
+==1088==     in use at exit: 0 bytes in 0 blocks
+==1088==   total heap usage: 11 allocs, 11 frees, 1,228 bytes allocated
+==1088==
+==1088== All heap blocks were freed -- no leaks are possible
+==1088==
+==1088== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```
+
+Les 11 allocations correspondent à 11 libérations : aucune fuite et aucune erreur mémoire, y compris dans les scénarios d’échec d’allocation simulés.
 
 ### Questions de réflexion
 
@@ -210,17 +218,61 @@ Cette initialisation garantit que chaque retour en erreur laisse un résultat da
 
 ## Exercice 2 — Lecture, écriture et affichage
 
+### Tests de l’exercice 2
+
+Compilation (sans aucun avertissement) et exécution réalisées sous Windows avec GCC :
+
+```powershell
+gcc -std=c11 -Wall -Wextra -Wpedantic -g -DMAT_TEST_ALLOC test_ex2.c matrice.c matrice_alloc.c matrice_io.c -o test_ex2.exe
+.\test_ex2.exe
+```
+
+Sortie obtenue :
+
+```text
+=== Exercice 2 : affichage (verification visuelle) ===
+M (4 x 3) :
+        1        2        3
+        4        5        6
+        7        8        9
+       10       11       12
+(2.a) Vous devez voir ci-dessus 4 lignes : 1 2 3 / 4 5 6 / 7 8 9 / 10 11 12
+=== Exercice 2 : ecriture ===
+[OK]    ouverture de test_ex2_sortie.txt en ecriture
+[OK]    (2.b) mat_ecrire renvoie MAT_OK
+[OK]    (2.b) le fichier contient exactement le format attendu
+[OK]    (2.b) mat_ecrire refuse une matrice vide
+=== Exercice 2 : relecture ===
+[OK]    (2.f) mat_lire relit le fichier : MAT_OK
+[OK]    (2.e) la matrice relue est identique
+[OK]    (2.e) espaces et sauts de ligne en trop sont toleres
+=== Exercice 2 : fichiers incorrects ===
+[OK]    (2.c) fichier vide
+[OK]    (2.c) dimension nulle
+[OK]    (2.c) dimension negative
+[OK]    (2.e) coefficient manquant
+[OK]    (2.e) donnee non numerique
+[OK]    (2.e) entier trop grand pour un int
+=== Exercice 2 : echec d'allocation simule ===
+[OK]    (2.d) mat_lire renvoie MAT_ERR_ALLOCATION proprement
+
+Bilan : 14 / 14 verifications reussies.
+Pensez a verifier l'absence de fuite : valgrind --leak-check=full ./test_ex2
+```
+
+Les 14 vérifications de `test_ex2` ont réussi : affichage, écriture au format canonique, relecture, six fichiers incorrects et échec d’allocation simulé. La sortie de Valgrind pour `test_ex2` reste à ajouter.
+
 ### Questions de l’exercice 2
 
-**Question 1**
+**Q4.1 — Pourquoi `mat_lire` remplit-elle d’abord une matrice locale avant de l’affecter à `*res` ?**
 
 `mat_lire` remplit d’abord une matrice locale avant de l’affecter à `*res`, afin de respecter la règle R3 de la bibliothèque : si une fonction échoue, le paramètre de sortie `*res` doit rester dans un état sûr (`MATRICE_VIDE`), sans fuite de mémoire. Si la lecture échoue au milieu du fichier, seule la matrice locale est détruite ; l’appelant ne reçoit jamais une matrice à moitié remplie.
 
-**Question 2**
+**Q4.2 — La lecture vérifie-t-elle que chaque ligne de la matrice est sur sa propre ligne de texte ? Est-ce gênant ?**
 
 Non. `mat_lire` appelle `lire_entier`, qui utilise `fscanf` avec `%31s` puis `strtol` : elle consomme les entiers les uns après les autres. En C, les fonctions de lecture formatée de la bibliothèque standard traitent les espaces, les tabulations et les sauts de ligne (`\n`) comme de simples séparateurs. La mise en forme du fichier n’est donc pas gênante.
 
-**Question 3**
+**Q4.3 — Comment exploiter la position du flux après `mat_lire` pour stocker deux matrices dans un même fichier ?**
 
 Pour écrire deux matrices dans le même fichier, il suffit d’appeler `mat_ecrire` pour la première, puis, sans fermer le fichier, `mat_ecrire` pour la seconde. Les deux blocs de texte se succèdent naturellement.
 
@@ -242,7 +294,7 @@ if (mat_lire(f, &m2) != MAT_OK) {
 }
 ```
 
-**Question 4**
+**Q4.4 — Pourquoi `mat_ecrire` appelle-t-elle `fflush` avant de renvoyer `MAT_OK` ? Cela dispense-t-il l’appelant de tester `fclose` ?**
 
 Les fonctions d’écriture comme `fprintf` ou `fputc` n’écrivent pas immédiatement dans le fichier. Pour des raisons de performance, les données sont d’abord stockées dans une mémoire tampon (le buffer). Le contenu n’est réellement transmis au système que lorsque le tampon est plein, ou lors de la fermeture du fichier. En appelant `fflush(f)` à la fin, on force le vidage immédiat du tampon. Si ce vidage échoue, `fflush` renvoie `EOF`, ce qui permet à `mat_ecrire` de détecter l’erreur sur le moment et de renvoyer `MAT_ERR_ECRITURE` au lieu de valider faussement l’écriture.
 
@@ -399,7 +451,26 @@ Pensez a verifier l'absence de fuite : valgrind --leak-check=full ./test_ex3
 
 Les 14 vérifications de `test_ex3` ont réussi : addition, multiplication, refus des dimensions incompatibles, détection des dépassements, non-modification des entrées, refus de `res` égal à une entrée et échec d’allocation simulé.
 
-Vérification mémoire : la sortie réelle de `valgrind --leak-check=full ./test_ex3`, exécuté sous Linux sur le `matrice_calcul.c` final du dépôt, reste à ajouter ici (le test pose la question de l’absence de fuite ; les chemins d’erreur avec `mat_detruire(&r)` sont ceux à surveiller).
+Vérification mémoire : Valgrind n’existant pas sous Windows, elle a été réalisée sous Linux (Ubuntu 22.04 dans WSL2, Valgrind 3.18.1), sur les fichiers de ce dépôt, avec les commandes suivantes :
+
+```bash
+gcc -std=c11 -Wall -Wextra -Wpedantic -g -DMAT_TEST_ALLOC test_ex3.c matrice.c matrice_alloc.c matrice_calcul.c -o /tmp/test_ex3
+valgrind --leak-check=full /tmp/test_ex3
+```
+
+Extrait du rapport (après les 14 lignes `[OK]`) :
+
+```text
+==1078== HEAP SUMMARY:
+==1078==     in use at exit: 0 bytes in 0 blocks
+==1078==   total heap usage: 37 allocs, 37 frees, 1,412 bytes allocated
+==1078==
+==1078== All heap blocks were freed -- no leaks are possible
+==1078==
+==1078== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```
+
+Les 37 allocations correspondent à 37 libérations : aucune fuite et aucune erreur mémoire, y compris dans les chemins d’erreur (dépassement de capacité, dimensions incompatibles, échecs d’allocation simulés) où `mat_detruire(&r)` doit rendre la matrice locale avant de renvoyer le code d’erreur.
 
 ### Questions de l’exercice 3
 
@@ -427,12 +498,11 @@ C’est pourquoi la bibliothèque calcule d’abord la somme dans un type plus l
 
 ## Déclaration de l’aide utilisée
 
-Codex (assistant d’IA) a été utilisé pour clarifier les consignes, examiner les diagnostics des tests et discuter de la vérification des dimensions, de l’allocation et du nettoyage en cas d’échec. Claude (assistant d’IA) a été utilisé pour relire le code de l’exercice 1, pour expliquer la démarche de l’exercice 3 étape par étape (3.a à 3.h) et proposer les extraits de code correspondants, que Van Thanh a intégrés dans `matrice_calcul.c`, compilés et testés, pour lancer Valgrind sous Linux sur l’exercice 1, et pour rédiger et mettre en forme les parties de ce compte rendu consacrées aux exercices 1 et 3. Van Thanh a intégré les modifications dans le dépôt et a exécuté les commandes de compilation et les tests indiqués dans ce compte rendu, sauf la commande Valgrind de l’exercice 1, exécutée sous Linux comme indiqué plus haut. Chaque autre membre devra déclarer l’aide qu’il a reçue pour sa propre contribution.
+Codex (assistant d’IA) a été utilisé pour clarifier les consignes, examiner les diagnostics des tests et discuter de la vérification des dimensions, de l’allocation et du nettoyage en cas d’échec. Claude (assistant d’IA) a été utilisé pour relire le code de l’exercice 1, pour rédiger le code de `matrice_calcul.c` (exercice 3, étapes 3.a à 3.h) à partir des indications de l’énoncé, et pour aider à rédiger et mettre en forme les parties de ce compte rendu consacrées aux exercices 1 et 3. Van Thanh a copié ce code dans le dépôt, l’a compilé et testé (`test_ex3` : 14 / 14), et a exécuté lui-même les commandes de compilation, de test et de vérification Valgrind des exercices 1 et 3 indiquées dans ce compte rendu (Ubuntu 22.04 sous WSL2). Chaque autre membre devra déclarer l’aide qu’il a reçue pour sa propre contribution.
 
 ## Éléments restant à compléter par le groupe
 
-- Ajouter, pour l’exercice 2, l’explication des étapes 2.a à 2.f avec le code correspondant, et la sortie réelle de `test_ex2`.
-- Ajouter la sortie réelle de `valgrind --leak-check=full ./test_ex3` avec le résumé du tas et la confirmation d’absence de fuite (Linux ou GitHub Actions), puis celle de `demo_matrices` pour l’exercice 4.
-- Exercice 4 (`main.c`, Marwane) : explications, scénarios de démonstration, réponses aux questions Q6.1 à Q6.3 et résultats de tests.
+- Ajouter, pour l’exercice 2, l’explication des étapes 2.a à 2.f avec le code correspondant, et la sortie réelle de `valgrind --leak-check=full ./test_ex2`.
+- Exercice 4 (`main.c`, Marwane) : explications, scénarios de démonstration, réponses aux questions Q6.1 à Q6.3, résultats de tests et sortie réelle de Valgrind.
 - Ajouter le bilan global du groupe avant le rendu final.
 - Avant le rendu, créer le tag `rendu` sur le commit final et pousser ce tag. Déposer sur Célène le ZIP du dépôt au tag `rendu`, l’adresse du dépôt GitHub et les 7 premiers caractères du commit. Date limite annoncée : lundi 2 novembre 2026 à 18 h. Le dépôt GitHub doit être public au plus tard le mardi 3 novembre 2026.
