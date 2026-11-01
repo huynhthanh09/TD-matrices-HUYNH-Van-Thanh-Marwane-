@@ -87,14 +87,15 @@ int main(int argc, char *argv[])
      *       Si err != MAT_OK : afficher sur stderr un message utilisant
      *       mat_message_erreur(err) et les dimensions de A et de B,
      *       puis : goto nettoyage;                                    */
-     MatErreur err = addition ? mat_additionner(&a, &b, &r)
-                              : mat_multiplier(&a, &b, &r);
-     if (err != MAT_OK) {
+    MatErreur err = addition ? mat_additionner(&a, &b, &r)
+                             : mat_multiplier(&a, &b, &r);
+    if (err != MAT_OK) {
         fprintf(stderr, "Erreur : calcul impossible : %s ",
-     mat_message_erreur(err));
-     fprintf(stderr, "(A : %d x %d, B : %d x %d)\n", stdout, "Matrice A : %d lignes, %d colonnes\n", a.nb_lignes, a.nb_colonnes, stdout, "Matrice B : %d lignes, %d colonnes\n", b.nb_lignes, b.nb_colonnes);
-     goto nettoyage;
-}
+                mat_message_erreur(err));
+        fprintf(stderr, "(A : %d x %d, B : %d x %d)\n",
+                a.nb_lignes, a.nb_colonnes, b.nb_lignes, b.nb_colonnes);
+        goto nettoyage;
+    }
     
 
     /* (4.c) À COMPLÉTER : afficher r (nom "R = A + B" ou "R = A x B").  */
