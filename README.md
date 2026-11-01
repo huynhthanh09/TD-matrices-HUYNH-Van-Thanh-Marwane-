@@ -2,23 +2,23 @@
 
 INSA Centre Val de Loire — 3e année STI — Programmation C
 
-> Version de travail mise à jour le 31 octobre 2026. Cette version documente les exercices 1 et 3, ainsi que les réponses et le résultat de test de l’exercice 2. Le compte rendu du groupe reste à compléter (explications de l’exercice 2, exercice 4, bilan) avant le rendu.
+> Version pour le rendu du lundi 2 novembre 2026. Ce compte rendu documente les exercices 1 à 4 de la bibliothèque de matrices, leurs tests et leur vérification mémoire avec Valgrind.
 
 ## Membres du groupe
 
 | Membre | GitHub | Travail documenté ici | Résultat des tests |
 |---|---|---|---|
 | HUYNH Van Thanh | [@huynhthanh09](https://github.com/huynhthanh09) | Exercice 1, étapes 1.a à 1.f (`matrice.c`, `matrice_alloc.c`) ; exercice 3, étapes 3.a à 3.h (`matrice_calcul.c`) ; réponses aux questions Q3.1 à Q3.4 et Q5.1 à Q5.4 | `test_ex1` : 16 / 16 ; `test_ex3` : 14 / 14, Valgrind sans fuite |
-| Marwane Laanaya | [@LnyMarwane](https://github.com/LnyMarwane) | Exercice 2 (`matrice_io.c`) ; réponses aux questions Q4.1 à Q4.4 | `test_ex2` : 14 / 14 |
+| Marwane Laanaya | [@LnyMarwane](https://github.com/LnyMarwane) | Exercice 2 (`matrice_io.c`) ; exercice 4 (`main.c`) ; réponses aux questions Q4.1 à Q4.4 et Q6.1 à Q6.3 | `test_ex2` : 14 / 14, Valgrind sans fuite ; `demo_matrices` : scénarios de l’exercice 4 |
 
 ### Avancement par exercice
 
 | Exercice | Fichier(s) | Responsable | État | Test |
 |---|---|---|---|---|
 | 1 — Allocation et destruction | `matrice.c`, `matrice_alloc.c` | Van Thanh | Terminé | `test_ex1` : 16 / 16, Valgrind sans fuite |
-| 2 — Entrées-sorties | `matrice_io.c` | Marwane | Code terminé ; explications des étapes 2.a à 2.f et Valgrind à ajouter | `test_ex2` : 14 / 14 |
+| 2 — Entrées-sorties | `matrice_io.c` | Marwane | Terminé | `test_ex2` : 14 / 14, Valgrind sans fuite |
 | 3 — Calcul matriciel | `matrice_calcul.c` | Van Thanh | Terminé | `test_ex3` : 14 / 14, Valgrind sans fuite |
-| 4 — Démonstration complète | `main.c` | Marwane | À compléter | À compléter |
+| 4 — Démonstration complète | `main.c` | Marwane | Terminé | 10 scénarios vérifiés, Valgrind sans fuite |
 
 ## Sommaire
 
@@ -33,6 +33,7 @@ INSA Centre Val de Loire — 3e année STI — Programmation C
   - [Tests et vérification mémoire](#tests-et-vérification-mémoire)
   - [Questions de réflexion](#questions-de-réflexion)
 - [Exercice 2 — Lecture, écriture et affichage](#exercice-2--lecture-écriture-et-affichage)
+  - [Étapes 2.a à 2.f](#étapes-2a-à-2f)
   - [Tests de l’exercice 2](#tests-de-lexercice-2)
   - [Questions de l’exercice 2](#questions-de-lexercice-2)
 - [Exercice 3 — Calcul matriciel](#exercice-3--calcul-matriciel)
@@ -46,6 +47,12 @@ INSA Centre Val de Loire — 3e année STI — Programmation C
   - [3.h — Transfert du résultat du produit](#3h--transfert-du-résultat-du-produit)
   - [Tests de l’exercice 3](#tests-de-lexercice-3)
   - [Questions de l’exercice 3](#questions-de-lexercice-3)
+- [Exercice 4 — Démonstration complète](#exercice-4--démonstration-complète)
+  - [4.a à 4.d — Parties complétées](#4a-à-4d--parties-complétées)
+  - [Scénarios de test](#scénarios-de-test)
+  - [Vérification mémoire de l’exercice 4](#vérification-mémoire-de-lexercice-4)
+  - [Questions de l’exercice 4](#questions-de-lexercice-4)
+- [Bilan du groupe](#bilan-du-groupe)
 - [Déclaration de l’aide utilisée](#déclaration-de-laide-utilisée)
 - [Éléments restant à compléter par le groupe](#éléments-restant-à-compléter-par-le-groupe)
 
@@ -218,6 +225,90 @@ Cette initialisation garantit que chaque retour en erreur laisse un résultat da
 
 ## Exercice 2 — Lecture, écriture et affichage
 
+### Étapes 2.a à 2.f
+
+`matrice_io.c` contient trois fonctions publiques (`mat_afficher`, `mat_ecrire`, `mat_lire`) et la fonction interne `lire_entier`, fournie, qui lit un entier en détectant les lettres, les nombres trop grands et la fin de fichier. Aucune fonction du module n’ouvre ni ne ferme de fichier : c’est l’appelant qui le fait (règle R7).
+
+#### 2.a — Affichage
+
+Le nom et les dimensions étaient déjà affichés. J’ai ajouté deux boucles imbriquées : chaque coefficient est affiché sur 8 caractères (`" %8d"`), ce qui aligne les colonnes, puis un saut de ligne termine chaque ligne de la matrice.
+
+```c
+for (int i = 0; i < m->nb_lignes; i++) {
+    for (int j = 0; j < m->nb_colonnes; j++)
+        printf(" %8d", m->coef[i][j]);
+    printf("\n");
+}
+```
+
+Le test `test_ex2` affiche la matrice `M` sur quatre lignes alignées (de 1 à 12) pour une vérification visuelle.
+
+#### 2.b — Écriture au format canonique
+
+La première ligne (les dimensions) était fournie. J’ai écrit les coefficients : le premier de chaque ligne avec `"%d"`, les suivants avec `" %d"` (un espace devant), pour n’avoir aucun espace en fin de ligne, puis un saut de ligne après chaque ligne, y compris la dernière.
+
+```c
+for (int i = 0; i < m->nb_lignes; i++) {
+    for (int j = 0; j < m->nb_colonnes; j++) {
+        int nb_caracteres_ecrits = fprintf(f, j == 0 ? "%d" : " %d", m->coef[i][j]);
+        if (nb_caracteres_ecrits < 0)
+            return MAT_ERR_ECRITURE;
+    }
+    if (fputc('\n', f) == EOF)
+        return MAT_ERR_ECRITURE;
+}
+```
+
+Chaque écriture est vérifiée : `fprintf` renvoie un nombre négatif en cas d’erreur et `fputc` renvoie `EOF`, ce qui donne `MAT_ERR_ECRITURE`. Le `fflush` final était fourni. Le test `(2.b) le fichier contient exactement le format attendu` compare le fichier octet par octet avec `4 3\n1 2 3\n4 5 6\n7 8 9\n10 11 12\n`.
+
+#### 2.c — Dimensions lues
+
+Les deux dimensions sont déjà lues par du code fourni. J’ai ajouté le contrôle de leur valeur :
+
+```c
+if (nb_lignes < 1 || nb_lignes > MAT_DIM_MAX
+    || nb_colonnes < 1 || nb_colonnes > MAT_DIM_MAX)
+    return MAT_ERR_FORMAT;
+```
+
+On renvoie `MAT_ERR_FORMAT` et non `MAT_ERR_ARGUMENT` : les paramètres de la fonction sont corrects, c’est le contenu du fichier qui est faux. Le contrôle est placé avant l’allocation, donc un fichier aberrant (par exemple `-2 3` ou `0 3`) ne provoque jamais de demande de mémoire démesurée. Les tests `(2.c) dimension nulle` et `(2.c) dimension negative` le vérifient.
+
+#### 2.d — Matrice locale
+
+```c
+Matrice tmp;
+err = mat_allouer(&tmp, nb_lignes, nb_colonnes);
+if (err != MAT_OK)
+    return err;
+```
+
+On remplit `tmp`, une variable locale, et non `*res` directement : si une erreur survient au milieu du fichier, l’appelant ne reçoit jamais une matrice à moitié remplie (réponse à Q4.1). Si `mat_allouer` échoue, elle a elle-même nettoyé et laissé `tmp` vide : il n’y a rien à libérer, on renvoie son code (`MAT_ERR_ALLOCATION`). `*res` reste égal à `MATRICE_VIDE`, établi au début de la fonction. Le test `(2.d) mat_lire renvoie MAT_ERR_ALLOCATION proprement` simule l’échec de chacune des trois allocations d’une matrice `2 x 2`.
+
+#### 2.e — Lecture des coefficients
+
+```c
+for (int i = 0; i < nb_lignes; i++) {
+    for (int j = 0; j < nb_colonnes; j++) {
+        err = lire_entier(f, &tmp.coef[i][j]);
+        if (err != MAT_OK) {
+            mat_detruire(&tmp);
+            return err;
+        }
+    }
+}
+```
+
+Exactement `nb_lignes x nb_colonnes` entiers sont lus, sans utiliser `feof` : les dimensions suffisent à savoir combien de valeurs lire. Si une lecture échoue (coefficient manquant, donnée non numérique, entier trop grand pour un `int`), `lire_entier` renvoie `MAT_ERR_FORMAT` ; il faut alors rendre la mémoire de `tmp` avec `mat_detruire(&tmp)` avant de renvoyer l’erreur, sinon Valgrind signalerait une fuite. Les trois tests de fichiers incorrects correspondants (`(2.e) coefficient manquant`, `donnee non numerique`, `entier trop grand pour un int`) et le test des espaces et sauts de ligne en trop vérifient cette étape.
+
+#### 2.f — Transfert du résultat
+
+```c
+*res = tmp;
+return MAT_OK;
+```
+
+Tout a réussi : la propriété de la mémoire est transférée à l’appelant (règle R2), qui devra appeler `mat_detruire`. Les tests `(2.f) mat_lire relit le fichier : MAT_OK` et `(2.e) la matrice relue est identique` valident l’aller-retour écriture puis lecture.
+
 ### Tests de l’exercice 2
 
 Compilation (sans aucun avertissement) et exécution réalisées sous Windows avec GCC :
@@ -260,7 +351,26 @@ Bilan : 14 / 14 verifications reussies.
 Pensez a verifier l'absence de fuite : valgrind --leak-check=full ./test_ex2
 ```
 
-Les 14 vérifications de `test_ex2` ont réussi : affichage, écriture au format canonique, relecture, six fichiers incorrects et échec d’allocation simulé. La sortie de Valgrind pour `test_ex2` reste à ajouter.
+Les 14 vérifications de `test_ex2` ont réussi : affichage, écriture au format canonique, relecture, six fichiers incorrects et échec d’allocation simulé. Vérification mémoire : réalisée sous Linux (Ubuntu 22.04 dans WSL2, Valgrind 3.18.1), sur les fichiers de ce dépôt :
+
+```bash
+gcc -std=c11 -Wall -Wextra -Wpedantic -g -DMAT_TEST_ALLOC test_ex2.c matrice.c matrice_alloc.c matrice_io.c -o /tmp/test_ex2
+valgrind --leak-check=full /tmp/test_ex2
+```
+
+Extrait du rapport (après les lignes `[OK]`) :
+
+```text
+==1123== HEAP SUMMARY:
+==1123==     in use at exit: 0 bytes in 0 blocks
+==1123==   total heap usage: 51 allocs, 51 frees, 60,728 bytes allocated
+==1123==
+==1123== All heap blocks were freed -- no leaks are possible
+==1123==
+==1123== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```
+
+Les 51 allocations correspondent à 51 libérations, y compris dans les scénarios de fichiers incorrects et d’échec d’allocation simulé, où `mat_lire` doit détruire sa matrice locale `tmp`.
 
 ### Questions de l’exercice 2
 
@@ -271,6 +381,8 @@ Les 14 vérifications de `test_ex2` ont réussi : affichage, écriture au format
 **Q4.2 — La lecture vérifie-t-elle que chaque ligne de la matrice est sur sa propre ligne de texte ? Est-ce gênant ?**
 
 Non. `mat_lire` appelle `lire_entier`, qui utilise `fscanf` avec `%31s` puis `strtol` : elle consomme les entiers les uns après les autres. En C, les fonctions de lecture formatée de la bibliothèque standard traitent les espaces, les tabulations et les sauts de ligne (`\n`) comme de simples séparateurs. La mise en forme du fichier n’est donc pas gênante.
+
+Le principe « tolérant en lecture, strict en écriture » se justifie ainsi : en écriture, le format canonique (un seul espace, pas d’espace final, un saut de ligne par ligne) garantit un fichier prévisible, que n’importe quel programme peut relire ; en lecture, la tolérance sur les blancs évite de rejeter un fichier valide modifié à la main, tandis que la rigueur sur le contenu (dimensions entre 1 et `MAT_DIM_MAX`, exactement `n x p` entiers représentables par un `int`) protège la bibliothèque contre les données invalides.
 
 **Q4.3 — Comment exploiter la position du flux après `mat_lire` pour stocker deux matrices dans un même fichier ?**
 
@@ -496,13 +608,129 @@ Parce que le dépassement a déjà eu lieu au moment du test, et qu’en C le d�
 
 C’est pourquoi la bibliothèque calcule d’abord la somme dans un type plus large (`long long`), où elle ne peut pas déborder pour deux `int`, puis teste avec `tient_dans_int` si le résultat rentre dans un `int`. Une autre solution correcte serait de tester avant d’additionner, par exemple `b > INT_MAX - a` pour `b > 0`.
 
+## Exercice 4 — Démonstration complète
+
+`main.c` assemble les quatre modules : le programme `demo_matrices` lit deux matrices depuis des fichiers, calcule leur somme ou leur produit, affiche les trois matrices et enregistre le résultat. Les trois matrices sont initialisées à `MATRICE_VIDE` (règle R1) et toute erreur saute à l’étiquette `nettoyage`, point de sortie unique où chaque matrice est détruite exactement une fois. Les fonctions `charger` et `sauvegarder`, qui ouvrent et ferment les fichiers (règle R7), étaient fournies.
+
+### 4.a à 4.d — Parties complétées
+
+```c
+/* 4.a : affichage de A et B */
+mat_afficher("A", &a);
+mat_afficher("B", &b);
+
+/* 4.b : calcul du résultat */
+MatErreur err = addition ? mat_additionner(&a, &b, &r)
+                         : mat_multiplier(&a, &b, &r);
+if (err != MAT_OK) {
+    fprintf(stderr, "Erreur : calcul impossible : %s ",
+            mat_message_erreur(err));
+    fprintf(stderr, "(A : %d x %d, B : %d x %d)\n",
+            a.nb_lignes, a.nb_colonnes, b.nb_lignes, b.nb_colonnes);
+    goto nettoyage;
+}
+
+/* 4.c : affichage de R */
+mat_afficher((addition ? "R = A + B" : "R = A x B"), &r);
+
+/* 4.d : succès */
+printf("Résultat enregistré dans \"%s\".\n", argv[4]);
+statut = EXIT_SUCCESS;
+```
+
+Une première version de l’étape 4.b passait `stdout` et des chaînes de caractères à la place des entiers dans le second `fprintf` : le compilateur signalait trois avertissements `-Wformat`, et les dimensions affichées dans les scénarios 3 et 4 étaient fausses. L’appel a été corrigé comme ci-dessus ; le programme compile désormais sans aucun avertissement.
+
+### Scénarios de test
+
+Compilation sans aucun avertissement, puis exécution sous Windows avec GCC :
+
+```powershell
+gcc -std=c11 -Wall -Wextra -Wpedantic -g main.c matrice.c matrice_alloc.c matrice_io.c matrice_calcul.c -o demo_matrices.exe
+```
+
+| # | Commande | Résultat observé | Code de sortie |
+|---|---|---|---|
+| 1 | `add A.txt B.txt R.txt` | affiche A, B et `R = A + B (4 x 3)` ; `R.txt` créé au format canonique | 0 |
+| 2 | `mul A.txt C.txt R.txt` | `R = A x B (4 x 2)` : `193 -36 / 37 22 / 65 78 / -10 17` | 0 |
+| 3 | `add A.txt C.txt R.txt` | « dimensions incompatibles (A : 4 x 3, B : 3 x 2) » | 1 |
+| 4 | `mul A.txt B.txt R.txt` | « dimensions incompatibles (A : 4 x 3, B : 4 x 3) » | 1 |
+| 5 | `add absent.txt B.txt R.txt` | « impossible d’ouvrir "absent.txt" : No such file or directory » | 1 |
+| 6 | `add invalide.txt B.txt R.txt` | « lecture de "donnees/invalide.txt" : fichier mal formé » | 1 |
+| 7 | `add tronque.txt B.txt R.txt` | « lecture de "donnees/tronque.txt" : fichier mal formé » | 1 |
+| 8 | `add A.txt B.txt dossier_inexistant/R.txt` | A, B et R affichées, puis « impossible de créer "dossier_inexistant/R.txt" : No such file or directory » | 1 |
+| 9 | échec d’allocation | simulé dans `test_ex2` (2.d) et `test_ex3` (3.f) : code `MAT_ERR_ALLOCATION`, aucune fuite | — |
+| 10 | aucun argument | message `Usage : ... <add\|mul> <fichier_A> <fichier_B> <fichier_R>` | 1 |
+
+Les fichiers `A.txt`, `B.txt`, `C.txt`, `invalide.txt` et `tronque.txt` sont dans le dossier `donnees/`. Les scénarios 3 et 4 affichent d’abord A et B, puis le message d’erreur sur `stderr`. Les accents du message (« mal formé », « créer ») s’affichent mal dans une console PowerShell dont la page de codes n’est pas UTF-8 (`chcp 65001` corrige l’affichage) ; le fichier source est bien enregistré en UTF-8.
+
+Relecture du fichier produit par le programme lui-même (critère final de l’énoncé) : le fichier `R.txt` du scénario 1 est relu comme A et comme B.
+
+```powershell
+.\demo_matrices.exe add donnees/A.txt donnees/B.txt R.txt
+.\demo_matrices.exe add R.txt R.txt R2.txt
+```
+
+Le second appel lit `R.txt` sans erreur, affiche A et B identiques (`26 50 87 / 19 38 17 / 52 96 19 / 10 23 7`), calcule `R = A + B` = `52 100 174 / 38 76 34 / 104 192 38 / 20 46 14` (chaque coefficient est doublé), enregistre `R2.txt` et se termine avec le code de sortie `0`. Le format canonique écrit par `mat_ecrire` est donc bien relu par `mat_lire`.
+
+### Vérification mémoire de l’exercice 4
+
+Réalisée sous Linux (Ubuntu 22.04 dans WSL2, Valgrind 3.18.1) sur le scénario 1 (succès) et sur le scénario 8 (échec de l’enregistrement : sortie par `goto nettoyage` alors que `r` est déjà allouée) :
+
+```bash
+gcc -std=c11 -Wall -Wextra -Wpedantic -g main.c matrice.c matrice_alloc.c matrice_io.c matrice_calcul.c -o /tmp/demo
+valgrind --leak-check=full /tmp/demo add donnees/A.txt donnees/B.txt /tmp/R.txt
+valgrind --leak-check=full /tmp/demo add donnees/A.txt donnees/B.txt /tmp/khong_co/R.txt
+```
+
+```text
+Scénario 1 (succès) :
+==1110== HEAP SUMMARY:
+==1110==     in use at exit: 0 bytes in 0 blocks
+==1110==   total heap usage: 22 allocs, 22 frees, 14,968 bytes allocated
+==1110== All heap blocks were freed -- no leaks are possible
+==1110== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+Scénario 8 (échec de l'enregistrement) :
+==1111== HEAP SUMMARY:
+==1111==     in use at exit: 0 bytes in 0 blocks
+==1111==   total heap usage: 21 allocs, 21 frees, 10,872 bytes allocated
+==1111== All heap blocks were freed -- no leaks are possible
+==1111== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```
+
+Dans les deux cas, toutes les allocations sont libérées : les trois matrices `a`, `b` et `r` sont détruites au point de sortie unique `nettoyage`.
+
+### Questions de l’exercice 4
+
+**Q6.1 — Pourquoi le message d’erreur est-il affiché par `main.c` (ou ses fonctions `static`) et non par `mat_lire` ?**
+
+Une bibliothèque doit rester générique et réutilisable : si `mat_lire` écrivait directement sur `stderr`, un programme à interface graphique réutilisant la bibliothèque afficherait ses messages dans une console invisible, ou perturberait son affichage. La bibliothèque se contente donc de renvoyer un code d’erreur, et c’est le programme appelant qui décide comment le présenter (console, boîte de dialogue, journal) grâce à `mat_message_erreur`.
+
+**Q6.2 — Pourquoi le résultat de `fclose` est-il testé dans `sauvegarder` mais pas dans `charger` ?**
+
+En écriture, les données passent par un tampon et ne sont parfois définitivement écrites qu’à la fermeture ; des erreurs critiques (disque plein, clé USB débranchée, droits manquants) peuvent n’y apparaître qu’à ce moment, donc il faut tester `fclose` pour être sûr que le fichier est complet. En lecture, rien n’est modifié sur le support et la matrice est déjà entièrement en mémoire : un échec de `fclose` n’altère pas les données chargées, et le tester est beaucoup moins important.
+
+**Q6.3 — Dans le scénario 8, le calcul a réussi mais l’enregistrement a échoué. Combien de matrices faut-il libérer ?**
+
+Trois : `a`, `b` et `r`. Le calcul a réussi, donc `r` a bien été allouée avant l’échec de l’enregistrement. Le point de sortie unique `nettoyage` appelle `mat_detruire` sur les trois, et c’est sans danger pour celles qui seraient restées vides (règle R6). Valgrind le confirme : 21 allocations, 21 libérations.
+
+## Bilan du groupe
+
+| Élément | Résultat |
+|---|---|
+| `test_ex1` (exercice 1) | 16 / 16, Valgrind sans fuite (11 allocs, 11 frees) |
+| `test_ex2` (exercice 2) | 14 / 14, Valgrind sans fuite (51 allocs, 51 frees) |
+| `test_ex3` (exercice 3) | 14 / 14, Valgrind sans fuite (37 allocs, 37 frees) |
+| `demo_matrices` (exercice 4) | 10 scénarios traités ; Valgrind sans fuite sur le succès (22 / 22) et sur l’échec d’enregistrement (21 / 21) |
+| Compilation | aucun avertissement avec `-std=c11 -Wall -Wextra -Wpedantic` |
+
+Difficultés rencontrées : l’affichage des dimensions dans le message d’erreur de `main.c` (arguments de `fprintf` incorrects, détectés par les avertissements du compilateur puis corrigés) ; le travail à deux sur le même dépôt, où un `git push` refusé (`fetch first`) a été résolu avec `git pull --rebase origin main` ; et l’exécution de Valgrind, absent de Windows, que nous avons lancé sous Linux dans WSL2.
+
 ## Déclaration de l’aide utilisée
 
-Codex (assistant d’IA) a été utilisé pour clarifier les consignes, examiner les diagnostics des tests et discuter de la vérification des dimensions, de l’allocation et du nettoyage en cas d’échec. Claude (assistant d’IA) a été utilisé pour relire le code de l’exercice 1, pour rédiger le code de `matrice_calcul.c` (exercice 3, étapes 3.a à 3.h) à partir des indications de l’énoncé, et pour aider à rédiger et mettre en forme les parties de ce compte rendu consacrées aux exercices 1 et 3. Van Thanh a copié ce code dans le dépôt, l’a compilé et testé (`test_ex3` : 14 / 14), et a exécuté lui-même les commandes de compilation, de test et de vérification Valgrind des exercices 1 et 3 indiquées dans ce compte rendu (Ubuntu 22.04 sous WSL2). Chaque autre membre devra déclarer l’aide qu’il a reçue pour sa propre contribution.
+Codex (assistant d’IA) a été utilisé pour clarifier les consignes, examiner les diagnostics des tests et discuter de la vérification des dimensions, de l’allocation et du nettoyage en cas d’échec. Claude (assistant d’IA) a été utilisé pour relire le code de l’exercice 1, pour rédiger le code de `matrice_calcul.c` (exercice 3, étapes 3.a à 3.h) à partir des indications de l’énoncé, pour repérer et corriger l’erreur d’affichage des dimensions dans `main.c` (étape 4.b), et pour aider à rédiger et mettre en forme ce compte rendu. Van Thanh a copié ce code dans le dépôt, l’a compilé et testé (`test_ex3` : 14 / 14), et a exécuté lui-même les commandes de compilation, de test et de vérification Valgrind des exercices 1 à 4 indiquées dans ce compte rendu (Ubuntu 22.04 sous WSL2). *À compléter par Marwane Laanaya : l’aide reçue pour les exercices 2 et 4.*
 
 ## Éléments restant à compléter par le groupe
 
-- Ajouter, pour l’exercice 2, l’explication des étapes 2.a à 2.f avec le code correspondant, et la sortie réelle de `valgrind --leak-check=full ./test_ex2`.
-- Exercice 4 (`main.c`, Marwane) : explications, scénarios de démonstration, réponses aux questions Q6.1 à Q6.3, résultats de tests et sortie réelle de Valgrind.
-- Ajouter le bilan global du groupe avant le rendu final.
+- Marwane : compléter la déclaration de l’aide utilisée (exercices 2 et 4).
 - Avant le rendu, créer le tag `rendu` sur le commit final et pousser ce tag. Déposer sur Célène le ZIP du dépôt au tag `rendu`, l’adresse du dépôt GitHub et les 7 premiers caractères du commit. Date limite annoncée : lundi 2 novembre 2026 à 18 h. Le dépôt GitHub doit être public au plus tard le mardi 3 novembre 2026.

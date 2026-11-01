@@ -135,6 +135,6 @@ MatErreur mat_lire(FILE *f, Matrice *res)
     /* (2.f) À COMPLÉTER : tout a réussi, on transfère le résultat :
      *         *res = tmp;  return MAT_OK;                             */
 
-     *res = tmp;  /* ligne provisoire : à remplacer en (2.f) */
+     *res = tmp;  
      return MAT_OK;
 }
